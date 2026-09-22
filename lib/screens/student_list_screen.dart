@@ -13,7 +13,7 @@ class _StudentListScreenState extends State<StudentListScreen>{
     appBar: AppBar(
       title: const Text('Student Registration'),
       backgroundColor: Colors.blue,
-    ), 
+    ),
     body: const Center(
       child: Text('No Student Registered yet.'),
     ), 
