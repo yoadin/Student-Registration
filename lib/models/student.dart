@@ -17,7 +17,7 @@ class Student{
       id: json['id'],
       name: json['name'],
       age: json['age'],
-      department: json['email'],
+      department: json['department'],
     );
 }
 

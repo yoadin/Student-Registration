@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:student_registration/models/student.dart';
-//import 'package:student_registration/models/student.dart';
+import 'package:http/http.dart' as http;
 
 class RegistrationForm extends StatefulWidget {
   const RegistrationForm({super.key});
@@ -14,7 +14,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
   final TextEditingController departmentController = TextEditingController();
   final TextEditingController idController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
-  final List<Map<String, String>> students = [];
+  final List<Student> students = [];
   int? editingIndex;
 
   @override
@@ -24,6 +24,37 @@ class _RegistrationFormState extends State<RegistrationForm> {
     idController.dispose();
     ageController.dispose();
     super.dispose();
+  }
+
+  Future<void> registerStudent() async {
+    if (nameController.text.trim().isEmpty ||
+        idController.text.trim().isEmpty ||
+        ageController.text.trim().isEmpty ||
+        departmentController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Fields can't be empty!")));
+      return;
+    }
+    try {
+      final response = await http.post(
+        Uri.parse('http://192.168.140.159/student_api/register_student.php'),
+        headers: {'Content-Type': 'application/json'},
+        body:
+            '''
+        {
+          "id": "${idController.text}",
+          "name": "${nameController.text}",
+          "age": ${ageController.text},
+          "department": "${departmentController.text}"
+        }
+      ''',
+      );
+
+      print(response.body);
+    } catch (e) {
+      print("Error: $e");
+    }
   }
 
   @override
@@ -87,49 +118,53 @@ class _RegistrationFormState extends State<RegistrationForm> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          //see if it works on list
-                          if (nameController.text.trim().isEmpty ||
-                              idController.text.trim().isEmpty ||
-                              ageController.text.trim().isEmpty ||
-                              departmentController.text.trim().isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Fields can't be empty!"),
-                                backgroundColor: Colors.deepOrangeAccent,
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          } else {
-                            setState(() {
-                              students.add({
-                                'name': nameController.text,
-                                'id': idController.text,
-                                'age': ageController.text,
-                                'department': departmentController.text,
-                              });
-                            });
-                            idController.clear();
-                            nameController.clear();
-                            ageController.clear();
-                            departmentController.clear();
-                          }
+                          //see if it works on php
+                          registerStudent();
+                          // if (nameController.text.trim().isEmpty ||
+                          //     idController.text.trim().isEmpty ||
+                          //     ageController.text.trim().isEmpty ||
+                          //     departmentController.text.trim().isEmpty) {
+                          //   ScaffoldMessenger.of(context).showSnackBar(
+                          //     const SnackBar(
+                          //       content: Text("Fields can't be empty!"),
+                          //       backgroundColor: Colors.deepOrangeAccent,
+                          //       duration: Duration(seconds: 2),
+                          //     ),
+                          //   );
+                          // } else {
+                          //   setState(() {
+                          //     students.add(
+                          //       Student(
+                          //         id: idController.text,
+                          //         name: nameController.text,
+                          //         age: ageController.text,
+                          //         department: departmentController.text,
+                          //       ),
+                          //     );
+                          //   });
+                          //   idController.clear();
+                          //   nameController.clear();
+                          //   ageController.clear();
+                          //   departmentController.clear();
+                          // }
                         },
                         //Registration
                         child: const Icon(Icons.app_registration),
                       ),
-                      if (students.isNotEmpty)
+                      if (editingIndex != null)
                         ElevatedButton(
                           onPressed: () {
                             setState(() {
                               if (editingIndex != null) {
-                                students[editingIndex!]['name'] =
+                                students[editingIndex!].name =
                                     nameController.text;
-                                students[editingIndex!]['id'] =
-                                    idController.text;
-                                students[editingIndex!]['department'] =
+                                students[editingIndex!].id = idController.text;
+                                students[editingIndex!].department =
                                     departmentController.text;
-                                students[editingIndex!]['age'] =
+                                students[editingIndex!].age =
                                     ageController.text;
+
+                                editingIndex = null;
                               }
                             });
                           },
@@ -161,16 +196,16 @@ class _RegistrationFormState extends State<RegistrationForm> {
                           color: Colors.blue.shade400,
                         ),
                         title: Text(
-                          students[index]['name']!,
+                          students[index].name,
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         subtitle: Text(
-                          'ID: ${students[index]['id']} • '
-                          'Age: ${students[index]['age']} • '
-                          'Department: ${students[index]['department']}',
+                          'ID: ${students[index].id} • '
+                          'Age: ${students[index].age} • '
+                          'Department: ${students[index].department}',
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -178,12 +213,14 @@ class _RegistrationFormState extends State<RegistrationForm> {
                             IconButton(
                               icon: const Icon(Icons.edit),
                               onPressed: () {
-                                editingIndex = index;
-                                nameController.text = students[index]['name']!;
-                                idController.text = students[index]['id']!;
-                                ageController.text = students[index]['age']!;
-                                departmentController.text =
-                                    students[index]['department']!;
+                                setState(() {
+                                  editingIndex = index;
+                                  nameController.text = students[index].name;
+                                  idController.text = students[index].id;
+                                  ageController.text = students[index].age;
+                                  departmentController.text =
+                                      students[index].department;
+                                });
                               },
                             ),
                             IconButton(
