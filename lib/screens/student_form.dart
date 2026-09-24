@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:student_registration/models/student.dart';
+//import 'package:student_registration/models/student.dart';
 
 class RegistrationForm extends StatefulWidget {
   const RegistrationForm({super.key});
@@ -13,6 +15,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
   final TextEditingController idController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
   final List<Map<String, String>> students = [];
+  int? editingIndex;
 
   @override
   void dispose() {
@@ -93,7 +96,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                               const SnackBar(
                                 content: Text("Fields can't be empty!"),
                                 backgroundColor: Colors.deepOrangeAccent,
-                                duration: Duration(milliseconds: 7),
+                                duration: Duration(seconds: 2),
                               ),
                             );
                           } else {
@@ -110,10 +113,28 @@ class _RegistrationFormState extends State<RegistrationForm> {
                             ageController.clear();
                             departmentController.clear();
                           }
-                          //clear after printing
                         },
-                        child: const Text("Register"),
+                        //Registration
+                        child: const Icon(Icons.app_registration),
                       ),
+                      if (students.isNotEmpty)
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              if (editingIndex != null) {
+                                students[editingIndex!]['name'] =
+                                    nameController.text;
+                                students[editingIndex!]['id'] =
+                                    idController.text;
+                                students[editingIndex!]['department'] =
+                                    departmentController.text;
+                                students[editingIndex!]['age'] =
+                                    ageController.text;
+                              }
+                            });
+                          },
+                          child: const Icon(Icons.save),
+                        ),
                       ElevatedButton(
                         onPressed: () {
                           idController.clear();
@@ -121,7 +142,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                           ageController.clear();
                           departmentController.clear();
                         },
-                        child: const Text("Clear"),
+                        child: const Icon(Icons.clear),
                       ),
                     ],
                   ),
@@ -151,13 +172,29 @@ class _RegistrationFormState extends State<RegistrationForm> {
                           'Age: ${students[index]['age']} • '
                           'Department: ${students[index]['department']}',
                         ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            setState(() {
-                              students.removeAt(index);
-                            });
-                          },
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () {
+                                editingIndex = index;
+                                nameController.text = students[index]['name']!;
+                                idController.text = students[index]['id']!;
+                                ageController.text = students[index]['age']!;
+                                departmentController.text =
+                                    students[index]['department']!;
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                setState(() {
+                                  students.removeAt(index);
+                                });
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     ),
