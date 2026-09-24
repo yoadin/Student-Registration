@@ -1,18 +1,24 @@
 class Student{
   String id;
   String name;
-  String email;
-  String phone;
+  String age;
   String department;
-  String year;
+  
 
   Student({
   required this.id,
   required this.name,
-  required this.email,
-  required this.phone,
+  required this.age,
   required this.department,
-  required this.year,
 });
+
+ factory Student.fromJson(Map<String, dynamic> json) {
+    return Student(
+      id: json['id'],
+      name: json['name'],
+      age: json['age'],
+      department: json['email'],
+    );
 }
 
+}

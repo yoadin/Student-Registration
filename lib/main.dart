@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:student_registration/screens/student_form.dart';
 import 'screens/student_list_screen.dart';
 void main() {
   runApp(const StudentRegistrationApp());
@@ -17,7 +18,7 @@ class StudentRegistrationApp extends StatelessWidget {
         colorScheme: 
         ColorScheme.fromSeed(seedColor: Colors.blue)
       ),
-      home: const StudentListScreen(),
+      home: const RegistrationForm(),
     );
   }
 }
