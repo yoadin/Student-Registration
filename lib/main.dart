@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:student_registration/screens/student_form.dart';
-import 'screens/student_list_screen.dart';
+//import 'screens/student_list_screen.dart';
 void main() {
   runApp(const StudentRegistrationApp());
 }

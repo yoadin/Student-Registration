@@ -9,11 +9,10 @@ class RegistrationForm extends StatefulWidget {
 
 class _RegistrationFormState extends State<RegistrationForm> {
   final TextEditingController nameController = TextEditingController();
-  final TextEditingController departmentController =
-      TextEditingController();
+  final TextEditingController departmentController = TextEditingController();
   final TextEditingController idController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
-  
+  final List<Map<String, String>> students = [];
 
   @override
   void dispose() {
@@ -33,81 +32,140 @@ class _RegistrationFormState extends State<RegistrationForm> {
         backgroundColor: Colors.blue,
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(5.0),
 
-        child: Column(
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: "Student Name",
-                border: OutlineInputBorder(),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: "Student Name",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  TextField(
+                    controller: departmentController,
+                    decoration: const InputDecoration(
+                      labelText: "Department",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  TextField(
+                    controller: idController,
+                    decoration: const InputDecoration(
+                      labelText: "Student ID",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  TextField(
+                    controller: ageController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: "Age",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          //see if it works on list
+                          if (nameController.text.trim().isEmpty ||
+                              idController.text.trim().isEmpty ||
+                              ageController.text.trim().isEmpty ||
+                              departmentController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Fields can't be empty!"),
+                                backgroundColor: Colors.deepOrangeAccent,
+                                duration: Duration(milliseconds: 7),
+                              ),
+                            );
+                          } else {
+                            setState(() {
+                              students.add({
+                                'name': nameController.text,
+                                'id': idController.text,
+                                'age': ageController.text,
+                                'department': departmentController.text,
+                              });
+                            });
+                            idController.clear();
+                            nameController.clear();
+                            ageController.clear();
+                            departmentController.clear();
+                          }
+                          //clear after printing
+                        },
+                        child: const Text("Register"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          idController.clear();
+                          nameController.clear();
+                          ageController.clear();
+                          departmentController.clear();
+                        },
+                        child: const Text("Clear"),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+
+                  const Text(
+                    "Registered Student: ",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 20),
+                  for (int index = 0; index < students.length; index++)
+                    Card(
+                      child: ListTile(
+                        leading: Icon(
+                          Icons.person,
+                          color: Colors.blue.shade400,
+                        ),
+                        title: Text(
+                          students[index]['name']!,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'ID: ${students[index]['id']} • '
+                          'Age: ${students[index]['age']} • '
+                          'Department: ${students[index]['department']}',
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () {
+                            setState(() {
+                              students.removeAt(index);
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-
-            const SizedBox(height: 10),
-
-            TextField(
-              controller: departmentController,
-              decoration: const InputDecoration(
-                labelText: "Department",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            TextField(
-              controller: idController,
-              decoration: const InputDecoration(
-                labelText: "Student ID",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            TextField(
-              controller: ageController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: "Age",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 5),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: (){
-                  //see if it works on debug console
-                  print(nameController.text);
-                  print(idController.text);
-                  print(ageController.text);
-                  print(departmentController.text);
-                  //clear after printing
-                  idController.clear();
-                  nameController.clear();
-                  ageController.clear();
-                  departmentController.clear();
-
-                }, 
-                child: const Text("Register")),
-                ElevatedButton(
-                  onPressed: (){
-                    idController.clear();
-                    nameController.clear();
-                    ageController.clear();
-                    departmentController.clear();                 
-                  }, 
-                child: const Text("Clear")
-                )
-              ],
-            )
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
