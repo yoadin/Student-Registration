@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:student_registration/models/student.dart';
 import 'package:http/http.dart' as http;
+import 'package:student_registration/models/student.dart';
 
 class RegistrationForm extends StatefulWidget {
   const RegistrationForm({super.key});
@@ -10,6 +11,7 @@ class RegistrationForm extends StatefulWidget {
 }
 
 class _RegistrationFormState extends State<RegistrationForm> {
+
   final TextEditingController nameController = TextEditingController();
   final TextEditingController departmentController = TextEditingController();
   final TextEditingController idController = TextEditingController();
@@ -38,7 +40,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
     }
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.140.159/student_api/register_student.php'),
+        Uri.parse('http://192.168.0.192/student_api/register_student.php'),
         headers: {'Content-Type': 'application/json'},
         body:
             '''
@@ -51,7 +53,87 @@ class _RegistrationFormState extends State<RegistrationForm> {
       ''',
       );
 
-      print(response.body);
+      final data = jsonDecode(response.body);
+
+      if (data["success"] == true) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(data["message"])));
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(data["message"])));
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
+  Future<void> getStudents() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://192.168.0.192/student_api/get_students.php'),
+      );
+
+      final data = jsonDecode(response.body);
+
+      students.clear();
+
+      for (var student in data) {
+        students.add(Student.fromJson(student));
+      }
+
+      setState(() {});
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
+  Future<void> deleteStudent(String id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('http://192.168.0.192/student_api/delete_student.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({"id": id}),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (data["success"] == true) {
+        setState(() {
+          students.removeWhere((student) => student.id == id);
+        });
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(data["message"])));
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(data["message"])));
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
+  Future<void> updateStudent(String id) async {
+    try {
+      final response = await http.put(
+        Uri.parse('http://192.168.0.192/student_api/update_student.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "id": id,
+          "name": nameController.text,
+          "age": int.parse(ageController.text),
+          "department": departmentController.text,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      print(data["success"]);
+      print(data["message"]);
     } catch (e) {
       print("Error: $e");
     }
@@ -118,58 +200,21 @@ class _RegistrationFormState extends State<RegistrationForm> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          //see if it works on php
-                          registerStudent();
-                          // if (nameController.text.trim().isEmpty ||
-                          //     idController.text.trim().isEmpty ||
-                          //     ageController.text.trim().isEmpty ||
-                          //     departmentController.text.trim().isEmpty) {
-                          //   ScaffoldMessenger.of(context).showSnackBar(
-                          //     const SnackBar(
-                          //       content: Text("Fields can't be empty!"),
-                          //       backgroundColor: Colors.deepOrangeAccent,
-                          //       duration: Duration(seconds: 2),
-                          //     ),
-                          //   );
-                          // } else {
-                          //   setState(() {
-                          //     students.add(
-                          //       Student(
-                          //         id: idController.text,
-                          //         name: nameController.text,
-                          //         age: ageController.text,
-                          //         department: departmentController.text,
-                          //       ),
-                          //     );
-                          //   });
-                          //   idController.clear();
-                          //   nameController.clear();
-                          //   ageController.clear();
-                          //   departmentController.clear();
-                          // }
+                          getStudents();
                         },
-                        //Registration
+                        // onPressed: () {
+                        //   deleteStudent("ST001");
+                        // },
                         child: const Icon(Icons.app_registration),
                       ),
                       if (editingIndex != null)
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              if (editingIndex != null) {
-                                students[editingIndex!].name =
-                                    nameController.text;
-                                students[editingIndex!].id = idController.text;
-                                students[editingIndex!].department =
-                                    departmentController.text;
-                                students[editingIndex!].age =
-                                    ageController.text;
-
-                                editingIndex = null;
-                              }
-                            });
-                          },
-                          child: const Icon(Icons.save),
-                        ),
+                        if (editingIndex != null)
+                          ElevatedButton(
+                            onPressed: () {
+                              updateStudent(students[editingIndex!].id);
+                            },
+                            child: const Icon(Icons.save),
+                          ),
                       ElevatedButton(
                         onPressed: () {
                           idController.clear();
@@ -226,9 +271,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                             IconButton(
                               icon: const Icon(Icons.delete),
                               onPressed: () {
-                                setState(() {
-                                  students.removeAt(index);
-                                });
+                                deleteStudent(students[index].id);
                               },
                             ),
                           ],
