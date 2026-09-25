@@ -11,6 +11,11 @@ class RegistrationForm extends StatefulWidget {
 }
 
 class _RegistrationFormState extends State<RegistrationForm> {
+  @override
+  void initState() {
+    super.initState();
+    getStudents();
+  }
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController departmentController = TextEditingController();
@@ -56,6 +61,17 @@ class _RegistrationFormState extends State<RegistrationForm> {
       final data = jsonDecode(response.body);
 
       if (data["success"] == true) {
+        final newStudent = Student(
+          id: idController.text,
+          name: nameController.text,
+          age: ageController.text,
+          department: departmentController.text,
+        );
+
+        setState(() {
+          students.add(newStudent);
+        });
+
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(data["message"])));
@@ -200,11 +216,13 @@ class _RegistrationFormState extends State<RegistrationForm> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          getStudents();
+                          registerStudent();
+                          // idController.clear();
+                          // nameController.clear();
+                          // ageController.clear();
+                          // departmentController.clear();
                         },
-                        // onPressed: () {
-                        //   deleteStudent("ST001");
-                        // },
+
                         child: const Icon(Icons.app_registration),
                       ),
                       if (editingIndex != null)
@@ -212,6 +230,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                           ElevatedButton(
                             onPressed: () {
                               updateStudent(students[editingIndex!].id);
+                              getStudents();
                             },
                             child: const Icon(Icons.save),
                           ),
@@ -265,6 +284,11 @@ class _RegistrationFormState extends State<RegistrationForm> {
                                   ageController.text = students[index].age;
                                   departmentController.text =
                                       students[index].department;
+
+                                  idController.clear();
+                                  nameController.clear();
+                                  ageController.clear();
+                                  departmentController.clear();
                                 });
                               },
                             ),
